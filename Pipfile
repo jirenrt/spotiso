@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+spotipy = "*"
+python-dotenv = "*"
+youtube-search-python = "*"
+yt-dlp = "*"
+mutagen = "*"
+lyricsgenius = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
