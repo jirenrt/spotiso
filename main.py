@@ -9,7 +9,6 @@ from mutagen.id3 import ID3, APIC, USLT, TIT2, TPE1, error
 from mutagen.mp3 import MP3
 import lyricsgenius
 
-
 # Load environment variables
 load_dotenv()
 spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
@@ -26,29 +25,32 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id,
 
 playlist_id = input("Playlist ID: ")
 
-def get_playlist_tracks(playlist_id):
-    results = sp.playlist_tracks(playlist_id)
-    tracks = results['items']
-    while results['next']:
-        results = sp.next(results)
-        tracks.extend(results['items'])
-    return tracks
+def get_playlist_info(playlist_id):
+    playlist = sp.playlist(playlist_id)
+    name = playlist['name']
+    tracks = playlist['tracks']['items']
+    while playlist['tracks']['next']:
+        playlist['tracks'] = sp.next(playlist['tracks'])
+        tracks.extend(playlist['tracks']['items'])
+    return name, tracks
 
 def format_track(track):
     artist = track['artists'][0]['name']
     track_name = track['name']
     return f'{artist} – {track_name}'
 
-tracks = get_playlist_tracks(playlist_id)
+playlist_name, tracks = get_playlist_info(playlist_id)
 formatted_tracks = [format_track(item['track']) for item in tracks]
 
-with open(f'{playlist_id}.txt', 'w', encoding='utf-8') as file:
+# Create directory with playlist name
+os.makedirs(playlist_name, exist_ok=True)
+
+with open(f'{playlist_name}/{playlist_id}.txt', 'w', encoding='utf-8') as file:
     for track in formatted_tracks:
         file.write(f"{track},\n")
 
-print(f"Playlist tracks have been written to {playlist_id}.txt")
+print(f"Playlist tracks have been written to {playlist_name}/{playlist_id}.txt")
 
-# playlist_id = "playlist_tracks"
 ####################### DOWNLOAD PART ##########################
 
 def load_songs_from_file(filename):
@@ -56,7 +58,7 @@ def load_songs_from_file(filename):
         songs = [line.strip().strip(',') for line in file]
     return songs
 
-songs = load_songs_from_file(f'{playlist_id}.txt')
+songs = load_songs_from_file(f'{playlist_name}/{playlist_id}.txt')
 genius = lyricsgenius.Genius(genius_api_token)
 
 def get_youtube_url(query):
@@ -67,7 +69,7 @@ def get_youtube_url(query):
     else:
         return None
 
-def download_song(url, title):
+def download_song(url, title, directory):
     safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '.', '_')]).rstrip()
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -76,17 +78,15 @@ def download_song(url, title):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': f'{safe_title}.%(ext)s',
+        'outtmpl': f'{directory}/{safe_title}.%(ext)s',
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
-    return f'{safe_title}.mp3'
+    return f'{directory}/{safe_title}.mp3'
 
 def fetch_cover_art(artist, track):
-    
     url = f'http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key={last_fm_api_key}&artist={artist}&track={track}&format=json'
-    print(url)
     response = requests.get(url)
     data = response.json()
     if 'track' in data and 'album' in data['track'] and 'image' in data['track']['album']:
@@ -138,7 +138,7 @@ for song in songs:
     if url:
         print(f"Found URL: {url}")
         artist, title = [part.strip() for part in song.split("–")]
-        mp3_file = download_song(url, title)
+        mp3_file = download_song(url, title, playlist_name)
 
         cover_art_url = fetch_cover_art(artist, title)
         if cover_art_url:
