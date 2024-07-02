@@ -9,8 +9,9 @@ from mutagen.id3 import ID3, APIC, USLT, TIT2, TPE1, error
 from mutagen.mp3 import MP3
 import lyricsgenius
 
-# Load environment variables
+
 load_dotenv()
+
 spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
 spotify_secret = os.getenv("SPOTIFY_SECRET")
 spotify_redirect_url = os.getenv("SPOTIFY_REDIRECT_URL")
@@ -23,9 +24,12 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id,
                                                redirect_uri=spotify_redirect_url,
                                                scope="playlist-read-private"))
 
+
 playlist_id = input("Playlist ID: ")
 
+
 def get_playlist_info(playlist_id):
+    
     playlist = sp.playlist(playlist_id)
     name = playlist['name']
     tracks = playlist['tracks']['items']
@@ -70,6 +74,7 @@ def get_youtube_url(query):
         return None
 
 def download_song(url, title, directory):
+    
     safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '.', '_')]).rstrip()
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -79,11 +84,15 @@ def download_song(url, title, directory):
             'preferredquality': '192',
         }],
         'outtmpl': f'{directory}/{safe_title}.%(ext)s',
+        'noplaylist': True,
+        'continue': True,  # This enables resuming downloads
     }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-    return f'{directory}/{safe_title}.mp3'
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        return f'{directory}/{safe_title}.mp3'
+    except:
+        return None
 
 def fetch_cover_art(artist, track):
     url = f'http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key={last_fm_api_key}&artist={artist}&track={track}&format=json'
@@ -96,10 +105,13 @@ def fetch_cover_art(artist, track):
     return None
 
 def fetch_lyrics(artist, track):
-    song = genius.search_song(track, artist)
-    if song:
-        return song.lyrics
-    return None
+    try:
+        song = genius.search_song(track, artist)
+        if song:
+            return song.lyrics
+        return None
+    except:
+        return None
 
 def embed_metadata(mp3_file, cover_art_url, lyrics, title, artist):
     audio = MP3(mp3_file, ID3=ID3)
