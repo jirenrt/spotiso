@@ -43,7 +43,7 @@ if choosen_collection == "1" :
 elif choosen_collection == "2" :
     album_id = input("Album ID : ")
 elif choosen_collection == "3" :
-    artist_id = input("Artist ID")
+    artist_id = input("Artist ID : ")
 
 
 def get_album_tracks(album_id) : 
@@ -64,9 +64,7 @@ def get_playlist_info(playlist_id):
 
 def get_artist_tracks(artist_id) : 
     artist_name = sp.artist(artist_id)["name"]
-    print(artist_name)
-    exit()
-    artist_tracks = sp.artist_top_tracks(album_id,"FR")
+    artist_tracks = sp.artist_top_tracks(artist_id,"FR")["tracks"]
     return artist_name, artist_tracks
 
 
@@ -89,15 +87,14 @@ def process_name_and_tracks(choosen_collection):
         formatted_tracks = [format_track(item) for item in tracks]
     elif choosen_collection == "3" :
         name, tracks = get_artist_tracks(artist_id)
-        formatted_tracks = [format_track for item in tracks]
-    
+        formatted_tracks = [format_track(item["album"]) for item in tracks]
     return name, formatted_tracks
 
 
 name, formatted_tracks = process_name_and_tracks(choosen_collection)
 
 
-print(formatted_tracks)
+
 os.makedirs(name, exist_ok=True)
 
 with open(f'{name}/{name}.txt', 'w', encoding='utf-8') as file:
@@ -108,7 +105,6 @@ print(f"Playlist tracks have been written to {name}/{name}.txt")
 
 
 exit(1)
-
 
 
 
