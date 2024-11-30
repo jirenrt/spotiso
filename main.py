@@ -15,9 +15,11 @@ load_dotenv()
 spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
 spotify_secret = os.getenv("SPOTIFY_SECRET")
 spotify_redirect_url = os.getenv("SPOTIFY_REDIRECT_URL")
-
 last_fm_api_key = os.getenv("LASTFM_API_KEY")
 genius_api_token = os.getenv("GENIUS_API_TOKEN")
+
+
+
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id,
                                                client_secret=spotify_secret,
@@ -25,7 +27,29 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id,
                                                scope="playlist-read-private"))
 
 
-playlist_id = input("Playlist ID: ")
+album_id = ""
+playlist_id = ""
+artist_id = ""
+
+welcome_msg = "Welcome to SpotiSoa(Spotify Save On A...).\nHere are the choice : \nChoose 1 to download Playlist\nChoose 2 to download Album\nChoose 3 to download Artist Top Tracks"
+
+print(welcome_msg)
+choosen_collection = input("Your choice : ")
+
+if choosen_collection == "1" :
+    playlist_id = input("Playlist ID : ")
+    print(playlist_id)
+    print (choosen_collection)
+elif choosen_collection == "2" :
+    album_id = input("Album ID : ")
+elif choosen_collection == "3" :
+    artist_id = input("Artist ID")
+
+
+def get_album_tracks(album_id) : 
+    album_name = sp.album(album_id)["name"]
+    album_tracks = sp.album_tracks(album_id)['items']
+    return album_name, album_tracks
 
 
 def get_playlist_info(playlist_id):
@@ -38,22 +62,55 @@ def get_playlist_info(playlist_id):
         tracks.extend(playlist['tracks']['items'])
     return name, tracks
 
+def get_artist_tracks(artist_id) : 
+    artist_name = sp.artist(artist_id)["name"]
+    print(artist_name)
+    exit()
+    artist_tracks = sp.artist_top_tracks(album_id,"FR")
+    return artist_name, artist_tracks
+
+
 def format_track(track):
     artist = track['artists'][0]['name']
     track_name = track['name']
     return f'{artist} – {track_name}'
 
-playlist_name, tracks = get_playlist_info(playlist_id)
-formatted_tracks = [format_track(item['track']) for item in tracks]
 
-# Create directory with playlist name
-os.makedirs(playlist_name, exist_ok=True)
 
-with open(f'{playlist_name}/{playlist_id}.txt', 'w', encoding='utf-8') as file:
+
+def process_name_and_tracks(choosen_collection):
+    name = ""
+    formatted_tracks = []
+    if choosen_collection == "1" :
+        name, tracks = get_playlist_info(playlist_id)
+        formatted_tracks = [format_track(item["track"]) for item in tracks]
+    elif choosen_collection == "2" :
+        name, tracks = get_album_tracks(album_id)
+        formatted_tracks = [format_track(item) for item in tracks]
+    elif choosen_collection == "3" :
+        name, tracks = get_artist_tracks(artist_id)
+        formatted_tracks = [format_track for item in tracks]
+    
+    return name, formatted_tracks
+
+
+name, formatted_tracks = process_name_and_tracks(choosen_collection)
+
+
+print(formatted_tracks)
+os.makedirs(name, exist_ok=True)
+
+with open(f'{name}/{name}.txt', 'w', encoding='utf-8') as file:
     for track in formatted_tracks:
         file.write(f"{track},\n")
 
-print(f"Playlist tracks have been written to {playlist_name}/{playlist_id}.txt")
+print(f"Playlist tracks have been written to {name}/{name}.txt")
+
+
+exit(1)
+
+
+
 
 ####################### DOWNLOAD PART ##########################
 
@@ -62,7 +119,7 @@ def load_songs_from_file(filename):
         songs = [line.strip().strip(',') for line in file]
     return songs
 
-songs = load_songs_from_file(f'{playlist_name}/{playlist_id}.txt')
+songs = load_songs_from_file(f'{name}/{name}.txt')
 genius = lyricsgenius.Genius(genius_api_token)
 
 def get_youtube_url(query):
@@ -150,7 +207,7 @@ for song in songs:
     if url:
         print(f"Found URL: {url}")
         artist, title = [part.strip() for part in song.split("–")]
-        mp3_file = download_song(url, title, playlist_name)
+        mp3_file = download_song(url, title, name)
 
         cover_art_url = fetch_cover_art(artist, title)
         if cover_art_url:
