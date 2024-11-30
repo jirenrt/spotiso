@@ -31,7 +31,8 @@ album_id = ""
 playlist_id = ""
 artist_id = ""
 
-welcome_msg = "Welcome to SpotiSoa(Spotify Save On A...).\nHere are the choice : \nChoose 1 to download Playlist\nChoose 2 to download Album\nChoose 3 to download Artist Top Tracks"
+
+welcome_msg = "Welcome to SpotiSoa(Spotify Save On A...).\nHere are the choice : \nChoose 1 to download Playlist\nChoose 2 to download Album\nChoose 3 to download Artist Top Tracks\nChoose 4 to download Your Saved Tracks"
 
 print(welcome_msg)
 choosen_collection = input("Your choice : ")
@@ -44,7 +45,17 @@ elif choosen_collection == "2" :
     album_id = input("Album ID : ")
 elif choosen_collection == "3" :
     artist_id = input("Artist ID : ")
+elif choosen_collection == "4" :
+     choosen_collection="4"
 
+
+def get_saved_tracks() : 
+    name = "My Favorites"
+    tracks = sp.current_user_saved_tracks()['items']
+  
+    return name, tracks
+
+     
 
 def get_album_tracks(album_id) : 
     album_name = sp.album(album_id)["name"]
@@ -88,6 +99,9 @@ def process_name_and_tracks(choosen_collection):
     elif choosen_collection == "3" :
         name, tracks = get_artist_tracks(artist_id)
         formatted_tracks = [format_track(item["album"]) for item in tracks]
+    elif choosen_collection == "4" : 
+        name, tracks = get_saved_tracks()
+        formatted_tracks = [format_track(item["track"]) for item in tracks]
     return name, formatted_tracks
 
 
@@ -102,9 +116,6 @@ with open(f'{name}/{name}.txt', 'w', encoding='utf-8') as file:
         file.write(f"{track},\n")
 
 print(f"Playlist tracks have been written to {name}/{name}.txt")
-
-
-exit(1)
 
 
 
