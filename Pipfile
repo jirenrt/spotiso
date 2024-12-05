@@ -10,6 +10,8 @@ youtube-search-python = "*"
 yt-dlp = "*"
 mutagen = "*"
 lyricsgenius = "*"
+pyfiglet = "*"
+colorama = "*"
 
 [dev-packages]
 
