@@ -29,6 +29,9 @@ def download_song(url, title, directory):
         'outtmpl': f'{directory}/{safe_title}.%(ext)s',
         'noplaylist': True,
         'continue': True,  # This enables resuming downloads
+        "u":'tinatojo2@gmail.com',
+        "p":"rabalitera6"
+
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
