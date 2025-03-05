@@ -1,6 +1,6 @@
 # Spotiso  
 
-A simple and effective way to enjoy your music experience seamlessly.  
+A simple and effective way to download locally your Spotify musics.
 
 ## Installation  
 
