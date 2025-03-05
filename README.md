@@ -9,13 +9,14 @@ A simple and effective way to enjoy your music experience seamlessly.
    git clone <repository-url>
    cd spotiso
 
-    Install Dependencies:
+2. **Install Dependencies:**
+   ```bash
+   pipenv install
 
-pipenv install
+3. **Activate Virtual Environment:**
+   ```bash
+   pipenv shell
 
-Activate Virtual Environment:
-
-pipenv shell
 
 Run the Application:
 
