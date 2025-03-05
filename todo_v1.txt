@@ -1,5 +1,5 @@
-try exception
-gender spotify
+try exception - done
+gender spotify - done
 
-Cover art
-Lyrics
+Cover art - done
+Lyrics - done
